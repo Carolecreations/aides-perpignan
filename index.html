@@ -2,13 +2,24 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<!-- Historique des mises à jour
+10 novembre 2026 : nouvelles situations (numérique, langues, isolement, réparation, quotidien) et 10 nouvelles fiches ;
+  recherche par mot-clé ; parcours rapides ; badges d'échéance ; partage WhatsApp/SMS ; impression ciblée ;
+  mode accompagnant ; bouton « signaler une erreur » par fiche ; astuce installation écran d'accueil.
+10 novembre 2026 (2) : plan « 3 démarches prioritaires » selon la difficulté n° 1 ; alerte urgence automatique
+  (impayés + logement/parent seul) ; détecteur de non-recours ; fiches aidants familiaux (AJPA, congé, répit)
+  et complémentaire santé solidaire.
+8 novembre 2026 : relecture complète des fiches.
+12 novembre 2026 : intégration du détecteur de droits non réclamés (12 questions), mention légale,
+  impression/PDF dédiée, correction des erreurs de syntaxe et fusion des scripts.
+13 novembre 2026 : relecture (France Services, Repair Café, Welcome 66, Centro Espagnol, aidants, C2S en double, fiche médiathèque retirée car la source parlait de Mulhouse).
+-->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aides à Perpignan</title>
 <meta name="description" content="Guide gratuit et indépendant des aides et tarifs réduits à Perpignan : CAF, CCAS, Département des Pyrénées-Orientales, Sankéo, associations.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#153A7A">
 <style>
 :root{--bg:#f4f6fa;--card:#ffffff;--tx:#0f172a;--mu:#475569;--ac:#153A7A;--on-ac:#ffffff;--ac-light:#e6edf8;--bd:#cbd5e1;--ok:#166534;--okb:#dcfce7;--wa:#92400e;--wab:#fef3c7;--info:#1e40af;--infob:#dbeafe;--gr:#334155;--grb:#e2e8f0;--red:#b91c1c;--gold:#FFCC00;--focus:#2563eb}
@@ -52,6 +63,109 @@ label.opt.on::before{content:"✓";font-weight:700}
 .qf-box input:focus{border-color:var(--ac)}
 .qf-box .hint{margin:8px 0 0}
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 8px}
+.parcours{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.parcours button{min-height:38px;padding:6px 14px;border:1.5px dashed var(--bd);background:var(--ac-light);color:var(--ac);border-radius:99px;cursor:pointer;font:600 0.88rem/1 inherit;font-family:inherit}
+.parcours button:hover{border-color:var(--ac);border-style:solid}
+.onlysel{display:flex;gap:8px;align-items:center;font-size:0.9rem;color:var(--mu);margin:2px 0 10px;cursor:pointer}
+.plan{background:var(--okb);border:2px solid var(--ok);border-radius:12px;padding:14px 18px;margin:0 0 18px}
+.plan h3{margin:0 0 8px;color:var(--ok);font-size:1.05rem;font-family:Georgia,serif}
+.plan ol{margin:0;padding-left:22px}
+.plan li{margin:6px 0;font-size:0.95rem}
+.qf-box select{width:100%;max-width:340px;padding:12px 14px;font-size:1rem;border:2px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+.qf-box select:focus{border-color:var(--ac)}
+#print-note{display:none}
+/* --- Détecteur : mention légale --- */
+.det-legal{
+  background:var(--wab);color:var(--wa);
+  border-left:4px solid var(--wa);
+  border-radius:8px;padding:10px 14px;
+  font-size:0.9rem;margin:10px 0 4px
+}
+.det-legal strong{display:block;margin-bottom:2px}
+#det-legal{display:block}
+/* --- Détecteur repliable --- */
+.det-fold{padding:0}
+.det-fold > summary{
+  cursor:pointer;
+  list-style:none;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  border-radius:12px;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.det-fold > summary::-webkit-details-marker{display:none}
+.det-fold > summary::marker{content:""}
+.det-fold > summary:hover{background:var(--ac-light)}
+.det-fold > summary:focus-visible{outline:3px solid var(--focus);outline-offset:-3px;border-radius:12px}
+.det-sum-title{
+  font-weight:700;
+  font-size:1.02rem;
+  color:var(--tx);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.det-sum-title::after{
+  content:"▸";
+  font-size:0.9rem;
+  color:var(--mu);
+  transition:transform .15s;
+  margin-left:auto;
+}
+.det-fold[open] .det-sum-title::after{transform:rotate(90deg)}
+.det-sum-hint{font-size:0.85rem;color:var(--mu)}
+.det-fold[open] > summary{border-bottom:1px solid var(--bd);border-radius:12px 12px 0 0}
+.det-fold > *:not(summary){padding-left:16px;padding-right:16px}
+.det-fold > *:last-child{padding-bottom:14px}
+@media (prefers-reduced-motion:reduce){
+  .det-sum-title::after{transition:none}
+}
+#det-out .det-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
+
+/* --- Impression du détecteur --- */
+@media print{
+  body.print-det #det-qs,
+  body.print-det #det-out .det-actions,
+  body.print-det #det-reset,
+  body.print-det #det-run,
+  body.print-det #det-print,
+  body.print-det #detecteur .hint,
+  body.print-det #det-legal{display:none!important}
+  body.print-det #det-legal-print{display:block!important}
+  body.print-det #det-out .card{
+    border:1px solid #999!important;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  body.print-det #det-out .card h3{color:#000}
+  body.print-det #det-out .badge{
+    border:1px solid #666;background:#fff!important;color:#000!important;
+  }
+  body.print-det #det-out .chk{
+    background:#fff!important;color:#000!important;border:1px dashed #666
+  }
+  body.print-det .urg,
+  body.print-det fieldset,
+  body.print-det .qf-box:not(#detecteur),
+  body.print-det .onlysel,
+  body.print-det #plan,
+  body.print-det #nonrecours,
+  body.print-det #results,
+  body.print-det #out,
+  body.print-det #urg-flag,
+  body.print-det footer,
+  body.print-det .tools:not(#det-out .tools){display:none!important}
+  body.print-det #detecteur{
+    display:block!important;
+    border:none!important;
+    padding:0!important;
+    background:#fff!important;
+  }
+}
+@media print{.onlysel,#guichet{display:none!important}body.print-sel .urg{display:none!important}#print-note{display:block;font-size:1rem;margin:0 0 16px}#print-note:empty{display:none}}
 .tool{min-height:42px;padding:6px 14px;border:1.5px solid var(--bd);background:transparent;color:var(--tx);border-radius:8px;cursor:pointer;font:600 0.9rem/1 inherit;font-family:inherit}
 .tool:hover{border-color:var(--ac);color:var(--ac)}
 .tool:disabled{opacity:.45;cursor:default}
@@ -66,6 +180,9 @@ label.opt.on::before{content:"✓";font-weight:700}
 .b-asso{background:var(--infob);color:var(--info)}
 .b-oth{background:var(--grb);color:var(--gr)}
 .b-chk{background:var(--wab);color:var(--wa)}
+.b-dl{background:var(--wab);color:var(--wa)}
+.b-dl.soon{background:#fee2e2;color:var(--red)}
+@media (prefers-color-scheme:dark){.b-dl.soon{background:#450a0a}}
 .chk{background:var(--wab);color:var(--wa);border-radius:8px;padding:8px 12px;font-size:0.88rem!important}
 .pj{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:0.9rem!important;border-left:3px solid var(--ac)}
 .price{font-weight:800;color:var(--ac)}
@@ -109,6 +226,7 @@ footer{font-size:0.84rem;color:var(--mu);border-top:2px solid var(--bd);margin-t
 
 <fieldset><legend>Votre situation</legend>
 <p class="hint">Vous pouvez cocher plusieurs cases. Les aides qui vous correspondent le mieux s'affichent en premier.</p>
+<div class="parcours" id="parcours" aria-label="Parcours rapides"></div>
 <div class="grid-opts" id="opts"></div>
 </fieldset>
 
@@ -118,42 +236,200 @@ footer{font-size:0.84rem;color:var(--mu);border-top:2px solid var(--bd);margin-t
 <p class="hint">Il figure sur votre attestation dans votre espace CAF (caf.fr). Il sert à afficher le tarif des accueils de loisirs et du périscolaire de la Ville.</p>
 </div>
 
+<div class="qf-box">
+<label for="search">Chercher par mot-clé (facultatif)</label>
+<input type="search" id="search" placeholder="Ex. : vélo, français, dentiste…">
+<p class="hint">La recherche regarde les titres et les textes des fiches. Vous pouvez la combiner avec les cases ci-dessus.</p>
+</div>
+
+<div class="qf-box">
+<label for="diff1">Votre difficulté n° 1 aujourd'hui (facultatif)</label>
+<select id="diff1">
+<option value="">— Choisir…</option>
+<option value="finances">L'argent, les fins de mois difficiles</option>
+<option value="logement">Le logement</option>
+<option value="emploi">L'emploi ou la formation</option>
+<option value="sante">La santé</option>
+<option value="mobilite">Se déplacer</option>
+<option value="isolement">La solitude, l'isolement</option>
+<option value="handicap">Le handicap (le mien ou d'un proche)</option>
+<option value="retraite">Ma retraite est trop faible</option>
+<option value="etudes">Mes études</option>
+</select>
+<p class="hint">Une seule question, et vous repartez avec 3 démarches prioritaires concrètes.</p>
+</div>
+<div id="plan" class="plan" hidden aria-live="polite"></div>
+
+<details class="qf-box det-fold" id="detecteur">
+  <summary>
+    <span class="det-sum-title">🔎 Détecteur de droits non réclamés</span>
+    <span class="det-sum-hint">12 questions rapides — cliquez pour ouvrir</span>
+  </summary>
+
+  <p class="hint" style="margin-top:12px">Répondez honnêtement : l'outil repère les aides que beaucoup de gens ignorent. Rien n'est envoyé.</p>
+
+  <p class="det-legal" id="det-legal">
+    <strong>⚠️ À lire avant de commencer</strong>
+    Ces pistes ne constituent pas une décision ; seul l'organisme compétent peut confirmer vos droits.
+  </p>
+
+  <div id="det-qs"></div>
+
+  <div class="tools" style="margin-top:12px">
+    <button type="button" class="tool" id="det-run">Voir mes droits oubliés</button>
+    <button type="button" class="tool" id="det-reset">Réinitialiser</button>
+    <button type="button" class="tool" id="det-print" disabled>Imprimer / PDF mes droits oubliés</button>
+  </div>
+
+  <div id="det-out" aria-live="polite"></div>
+</details>
+
+<div id="det-legal-print" hidden>
+  <p><strong>Guide des aides à Perpignan — Détecteur de droits non réclamés</strong></p>
+  <p>Document généré le <span id="det-print-date"></span>. Ce document est une aide à l'orientation, pas une décision administrative.</p>
+  <div class="det-legal" style="background:#fff;border:2px solid #b45309;color:#000;margin:10px 0 16px">
+    <strong>⚠️ Ces pistes ne constituent pas une décision.</strong>
+    Seul l'organisme compétent (CAF, CPAM, Département, CCAS, MDPH, caisse de retraite…) peut confirmer vos droits, après examen de votre dossier. Les informations ont été relues le 13 novembre 2026 et peuvent changer : vérifiez toujours auprès du guichet indiqué avant toute démarche.
+  </div>
+</div>
+
 <div class="tools">
 <button type="button" class="tool" id="btn-clear">Effacer mes choix</button>
 <button type="button" class="tool" id="btn-print">Imprimer ou enregistrer en PDF</button>
+<button type="button" class="tool" id="btn-share">Partager par WhatsApp ou SMS</button>
+<button type="button" class="tool" id="btn-guichet">Mode accompagnant (travailleur social, bénévole…)</button>
+</div>
+<label class="onlysel"><input type="checkbox" id="only-sel"> N'imprimer que mes résultats (sans les numéros d'urgence)</label>
+<div class="qf-box" id="guichet" hidden>
+<label for="prep">Mode accompagnant : cette fiche est préparée pour… (facultatif)</label>
+<input type="text" id="prep" placeholder="Ex. : Mme Martin, CCAS de Perpignan">
+<p class="hint">Ce nom apparaîtra en haut de la version imprimée. Idéal pour les travailleurs sociaux et bénévoles qui préparent les démarches avec quelqu'un.</p>
 </div>
 
 <h2 class="cnt" id="results" tabindex="-1" aria-live="polite"></h2>
+<div id="urg-flag" class="urg" hidden>
+<h2>Votre situation peut être urgente : agissez dès aujourd'hui</h2>
+<p>Impayés de loyer, factures d'énergie, découvert… Plus tôt vous prévenez, plus les solutions existent.</p>
+<ul>
+<li><a href="tel:0468344453">04 68 34 44 53</a><span>CCAS de Perpignan : rendez-vous gratuit avec un travailleur social, aide d'urgence</span></li>
+<li><a href="tel:3230">3230</a><span>CAF : signalez un impayé de loyer le plus tôt possible</span></li>
+<li><a href="tel:0430192520">04 30 19 25 20</a><span>Fonds de solidarité logement (FSL) du Département, du lundi au vendredi de 9 h à 12 h</span></li>
+</ul>
+</div>
+<div id="print-note" aria-hidden="true"></div>
 <div id="out"></div>
+
+<div class="qf-box" id="nonrecours">
+<strong>J'ai déjà demandé de l'aide ? Cochez ce que vous avez déjà contacté :</strong>
+<div class="grid-opts" style="margin-top:8px">
+<label class="opt"><input type="checkbox" class="nr" value="caf"><span>La CAF</span></label>
+<label class="opt"><input type="checkbox" class="nr" value="ccas"><span>Le CCAS de Perpignan</span></label>
+<label class="opt"><input type="checkbox" class="nr" value="fs"><span>France Services</span></label>
+<label class="opt"><input type="checkbox" class="nr" value="ft"><span>France Travail ou la Mission locale</span></label>
+</div>
+<p class="hint" id="nr-msg">Rien à faire ici : c'est juste pour repérer les guichets que vous n'avez jamais sollicités.</p>
+</div>
+
+<div class="qf-box">
+<strong>📱 Astuce : gardez ce guide sur votre écran d'accueil.</strong> Sur iPhone : bouton « Partager » puis « Sur l'écran d'accueil ». Sur Android : menu ⋮ du navigateur puis « Ajouter à l'écran d'accueil ». Le guide s'ouvrira comme une application, même sans l'avoir ouvert dans le navigateur.
+</div>
 
 <footer>
 <p><strong>Guide indépendant et non officiel.</strong> Il n'est lié ni à la Ville de Perpignan, ni à la CAF, ni au Département, ni à l'État.</p>
 <p>« Site officiel » : le lien mène vers un site public (État, CAF, Assurance maladie, MSA, Ville, Métropole, Département, Région, liO, Crous, Sankéo, agence de tourisme du Département). « Association » : site d'une association. « Autre source » : article de presse, blog ou entreprise. « À vérifier » : un détail (montant, adresse, horaires, téléphone) n'a pas pu être confirmé sur un site officiel et a peut-être changé.</p>
 <p>Ces informations sont générales et peuvent changer. Vérifiez toujours auprès de l'organisme avant de faire une démarche. Ce site ne donne pas de conseil juridique ou financier : pour un conseil gratuit, adressez-vous au CCAS, à l'ADIL 66 ou à un travailleur social.</p>
 <p>Une information est fausse ou manque ? Écrivez à <a href="mailto:citymemo66@gmail.com">citymemo66@gmail.com</a>.</p>
-<p>Dernière relecture : 8 novembre 2026.</p>
+<p>Dernière relecture : 13 novembre 2026.</p>
 </footer>
 </main>
 
 <script>
-/* ---------- Situations proposées ---------- */
+/* ============================================================
+   CHARGEMENT CONDITIONNEL DU MANIFESTE
+   (évite les erreurs CORS quand le fichier est ouvert en file:/// )
+   ============================================================ */
+if(location.protocol === 'http:' || location.protocol === 'https:'){
+  var _m = document.createElement('link');
+  _m.rel = 'manifest';
+  _m.href = 'site.webmanifest';
+  document.head.appendChild(_m);
+}
+
+/* ============================================================
+   SITUATIONS PROPOSÉES
+   ============================================================ */
 var CATS=[
 ["enfant","Enfant de moins de 12 ans"],["ado","Ado de 11 à 17 ans"],["jeune","Jeune de 16 à 25 ans"],["etudiant","Étudiant(e)"],
 ["parent","Parent seul(e)"],["travail","Je travaille, petit salaire"],["emploi","Je cherche un emploi"],["difficulte","Difficultés pour payer"],
-["logement","Souci de logement"],["handicap","Handicap (ou proche aidant)"],["senior","60 ans ou plus"],["retraite","Petite retraite"]
+["logement","Souci de logement"],["handicap","Handicap (ou proche aidant)"],["senior","60 ans ou plus"],["retraite","Petite retraite"],
+["numerique","Apprendre l'ordinateur et le numérique"],["langue","Apprendre le français ou une langue"],["seul","Se retrouver, ne pas rester seul(e)"],
+["reparer","Faire réparer mes affaires"],["quotidien","Faciliter la vie de tous les jours"],["aidant","J'aide un proche au quotidien"]
 ];
 
-/* ---------- Tarifs Ville 2025 pour les enfants HABITANT Perpignan (PDF officiel) ---------- */
+/* ============================================================
+   PARCOURS RAPIDES
+   ============================================================ */
+var PARC=[
+["arrivant","Je viens d'arriver à Perpignan",["logement","difficulte","langue","numerique","emploi","quotidien"]],
+["revenus","Mon revenu vient de chuter",["difficulte","travail","logement","quotidien"]],
+["retraite","Je prends ma retraite",["senior","retraite","numerique","seul","quotidien"]],
+["parent","Je suis parent solo",["parent","enfant","difficulte"]]
+];
+
+/* ============================================================
+   PLAN D'ACTION : 3 DÉMARCHES PRIORITAIRES
+   ============================================================ */
+var DIFFS={
+finances:["Vos finances",[
+"Prenez rendez-vous au CCAS (04 68 34 44 53) : un travailleur social peut débloquer une aide d'urgence et vous orienter.",
+"Faites le simulateur officiel mesdroitssociaux.gouv.fr : RSA, prime d'activité, aides au logement…",
+"Si vous ne payez plus une facture, prévenez avant la coupure : CCAS pour l'eau, fournisseur et chèque énergie pour l'électricité."]],
+logement:["Votre logement",[
+"Impayé ou risque d'expulsion ? Appelez le FSL du Département (04 30 19 25 20) et la CAF (3230) sans attendre.",
+"Questions de bail, travaux ou logement indécent : conseil gratuit à l'ADIL 66 (04 68 52 00 00).",
+"Pas de logement ou logement social : demande en ligne (office66.fr) ou avec l'aide du CCAS."]],
+emploi:["Votre emploi ou votre formation",[
+"Inscrivez-vous à France Travail (ou faites actualiser votre inscription) : c'est la porte d'entrée de la plupart des aides.",
+"Moins de 25 ans et plus à l'école : Mission locale 66, 04 68 34 26 61 (contrat d'engagement jeune, Fonds d'aide aux jeunes).",
+"Faites le simulateur mesdroitssociaux.gouv.fr : la prime d'activité complète les petits salaires."]],
+sante:["Votre santé",[
+"Vérifiez votre droit à la complémentaire santé solidaire (C2S) : gratuite ou à moins de 1 € par jour, elle évite de renoncer aux soins.",
+"Renoncez-vous à des soins pour raisons financières ? Un travailleur social du CCAS peut activer des aides (Fonds d'aide aux jeunes, aides du Crous pour les étudiants…).",
+"Besoin de parler : 3114 (24 h/24, gratuit) ; pour les démarches, France Services vous accompagne."]],
+mobilite:["Vos déplacements",[
+"Non imposable de 65 ans et plus (ou 60 ans avec l'ASPA) ? Le Passeport annuel Sankéo rend le bus gratuit.",
+"Moins de 26 ans ? Pass Jeune Sankéo à 90 € par an ; lycéens : Carte Jeune Région gratuite.",
+"Pas de voiture pour un emploi ou un soin ? Le transport sur réservation Sankéo (0 800 800 370) dessert les zones sans bus."]],
+isolement:["Votre isolement",[
+"Appelez le CCAS (04 68 34 44 53) : l'Espace Senior et les Espaces Citoyens proposent activités et rencontres près de chez vous.",
+"Personne âgée isolée : les Petits Frères des Pauvres organisent des visites et des sorties gratuites.",
+"Sortez pour un repas convivial : la cantine solidaire du Miam accueille du mardi au samedi midi, à prix libre."]],
+handicap:["Le handicap",[
+"Un seul dossier MDPH ouvre tous les droits (AAH, PCH, CMI) : 04 68 39 99 00, ou en ligne sur mdphenligne.cnsa.fr.",
+"Aidez un proche handicapé ou âgé ? Vos droits d'aidant : congé, AJPA, droit au répit (voir la fiche dédiée).",
+"Le Pôle Action Sociale du CCAS (04 68 34 95 22) monte les dossiers d'aide sociale avec vous."]],
+retraite:["Votre retraite",[
+"Demandez l'ASPA (minimum vieillesse) si vos revenus sont sous 1 043 € par mois : beaucoup de droits sont non réclamés.",
+"Vérifiez le calcul du minimum contributif sur votre notification de retraite ; doute ou refus : 3960.",
+"Petits revenus et perte d'autonomie : APA et aide ménagère, dossier via le CCAS."]],
+etudes:["Vos études",[
+"Déposez le dossier social étudiant (bourse Crous) chaque année au printemps ; les boursiers sont aussi exonérés de CVEC.",
+"Repas à 1 € au Crous de Perpignan avec le compte Izly, pour tous les étudiants depuis mai 2026.",
+"Difficulté durable ou passagère : assistante sociale du Crous (rendez-vous via crous-montpellier.fr) ; épicerie solidaire de l'Espace Sängö."]]
+};
+
+/* ============================================================
+   TARIFS VILLE 2025 (PDF officiel)
+   ============================================================ */
 var TARIFS="https://mairie-perpignan.fr/sites/default/files/2024-12/tarifs-2025.pdf";
-/* [QF max, journée sans repas, périscolaire/mois (2025), journée avec repas, demi-journée sans repas, demi-journée avec repas] : accueils de loisirs au 1er septembre 2026 */
 var GRID=[[300,"3,50","5","5,63","2,30","4,43"],[400,"4,00","7","6,59","2,50","5,09"],[600,"5,00","9","7,88","3,00","5,88"],[900,"6,90","11","10,55","4,50","8,15"],[1200,"9,30","13","13,04","5,40","9,14"],[1600,"11,20","15","15,04","6,10","9,94"],[1e9,"15,00","16","19,29","7,10","11,39"]];
 function band(q){for(var i=0;i<GRID.length;i++){if(q<=GRID[i][0])return GRID[i]}}
 
-/* ---------- Les aides ----------
-   k : situations concernées ; t : titre ; o : organisme ; d : description ; p : à préparer
-   c : encadré « À vérifier » ; u : lien source ; l : nom de la source ; ty : "asso" ou "autre" si le lien n'est pas un site public
-   start : affichée avant que l'on coche une case ; qf : affiche le tarif selon le quotient familial */
+/* ============================================================
+   LES AIDES
+   ============================================================ */
 var A=[
+{start:1,k:["difficulte","senior","parent","quotidien","logement"],t:"Tout ça me dépasse : par où commencer ?",o:"CCAS de Perpignan et France Services",d:"C'est très courant, et il y a une réponse simple : prenez rendez-vous avec un travailleur social du CCAS (04 68 34 44 53, 38 bis rue Couvent de la Merci) ou appelez France Services Perpignan Centre (04 68 66 30 47, rue Michel Carola). Apportez une pièce d'identité, un justificatif de domicile et votre dernier avis d'imposition. Au téléphone ou sur place, dites simplement : « Je cherche à savoir de quelles aides je peux bénéficier. » La personne vous orientera gratuitement, sans démarche à faire toute seule.",u:"https://www.perpignan.fr/solidarite/centre-communal-daction-sociale",l:"Ville de Perpignan, CCAS",u2:"https://www.france-services.gouv.fr/le-reseau/france-services-perpignan-centre",l2:"France services, Perpignan Centre"},
 {start:1,k:["enfant","ado","jeune","etudiant","parent","travail","emploi","difficulte","logement","handicap","senior","retraite"],t:"Simulateur officiel de vos droits",o:"État, mes-aides.gouv.fr",d:"Le site de l'État vous oriente vers deux simulateurs gratuits : mesdroitssociaux.gouv.fr (RSA, prime d'activité, aides au logement, etc.) et 1jeune1solution.gouv.fr pour les moins de 30 ans. Quelques minutes suffisent.",u:"https://mes-aides.gouv.fr/",l:"mes-aides.gouv.fr"},
 {start:1,k:["difficulte","senior","retraite","handicap","parent","logement"],t:"Centre communal d'action sociale (CCAS)",o:"Ville de Perpignan, 38 bis rue Couvent de la Merci",d:"Le CCAS est le premier guichet de l'aide sociale à Perpignan : rendez-vous avec un travailleur social, aide alimentaire, aides ponctuelles, orientation vers les bons services. Accueil : 04 68 34 44 53.",u:"https://www.perpignan.fr/solidarite/centre-communal-daction-sociale",l:"Ville de Perpignan, CCAS"},
 
@@ -163,10 +439,10 @@ var A=[
 {k:["enfant"],t:"Crèches et multi-accueil",o:"Ville de Perpignan",d:"Le tarif horaire est calculé sur les revenus de la famille, avec le barème national de la CAF (taux d'effort).",u:TARIFS,l:"Tarifs 2025 de la Ville (PDF)"},
 {k:["enfant"],t:"Bus Sankéo gratuit pour les moins de 4 ans",o:"Sankéo, Perpignan Méditerranée Métropole",d:"Gratuit s'ils voyagent avec un adulte. Prévoyez un justificatif d'âge.",u:"https://img-scoop-cms.airweb.fr/uploads/sites/44/reglement_sankeo.pdf",l:"Règlement Sankéo (PDF)"},
 {k:["ado"],t:"Cap'Ado : mini-séjours pour les 11-17 ans",o:"Ville de Perpignan, Direction Jeunesse",d:"Séjours collectifs pour les ados de Perpignan. Le prix dépend du quotient familial. Exemple en 2025 pour 5 jours avec nuits dans les Pyrénées-Orientales : de 52 € à 164 € pour le premier enfant, réduction pour le deuxième.",u:"https://mairie-perpignan.fr/sites/default/files/documents/432-cap-ado-2025-stdc.pdf",l:"Brochure Cap'Ado 2025 (PDF)",c:"Brochure 2025 : demandez la brochure de l'année en cours."},
-{k:["enfant","ado"],t:"Passeport temps libres (6-17 ans)",o:"CAF des Pyrénées-Orientales",d:"Une aide pour payer l'inscription à une activité de loisirs : 100 € si votre quotient familial est de 370 € ou moins, 80 € s'il est entre 371 et 700 €. La CAF l'envoie automatiquement en septembre aux familles concernées. Pour 2026-2027, renvoyez-le avant le 15 avril 2027.",u:"https://www.caf.fr/allocataires/caf-des-pyrenees-orientales/offre-de-service/vie-personnelle/les-vacances-et-les-loisirs/passeport-temps-libres",l:"CAF 66, passeport temps libres"},
-{k:["enfant","ado","handicap","etudiant"],t:"Pass'Sport : 50 € pour s'inscrire dans un club",o:"État",d:"50 € déduits directement du prix de la licence ou de l'adhésion. Pour 2026-2027 : jeunes de 6 à 17 ans dont le quotient familial est de 699 € ou moins, jeunes en situation de handicap, et étudiants boursiers de moins de 28 ans. À utiliser entre le 1er septembre et le 31 décembre 2026.",p:"le code personnel reçu par e-mail, à donner au club. Chaque enfant a son propre code.",u:"https://www.service-public.gouv.fr/particuliers/actualites/A15850",l:"Service-public.fr, Pass'Sport 2026-2027"},
+{k:["enfant","ado"],t:"Passeport temps libres (6-17 ans)",o:"CAF des Pyrénées-Orientales",dl:"2027-04-15",dlt:"à renvoyer avant le 15 avril 2027",d:"Une aide pour payer l'inscription à une activité de loisirs : 100 € si votre quotient familial est de 370 € ou moins, 80 € s'il est entre 371 et 700 €. La CAF l'envoie automatiquement en septembre aux familles concernées. Pour 2026-2027, renvoyez-le avant le 15 avril 2027.",u:"https://www.caf.fr/allocataires/caf-des-pyrenees-orientales/offre-de-service/vie-personnelle/les-vacances-et-les-loisirs/passeport-temps-libres",l:"CAF 66, passeport temps libres"},
+{k:["enfant","ado","handicap","etudiant"],t:"Pass'Sport : 50 € pour s'inscrire dans un club",o:"État",dl:"2026-12-31",dlt:"à utiliser avant le 31 décembre 2026",d:"50 € déduits directement du prix de la licence ou de l'adhésion. Pour 2026-2027 : jeunes de 6 à 17 ans dont le quotient familial est de 699 € ou moins, jeunes en situation de handicap, et étudiants boursiers de moins de 28 ans. À utiliser entre le 1er septembre et le 31 décembre 2026.",p:"le code personnel reçu par e-mail, à donner au club. Chaque enfant a son propre code.",u:"https://www.service-public.gouv.fr/particuliers/actualites/A15850",l:"Service-public.fr, Pass'Sport 2026-2027"},
 {k:["enfant","ado","difficulte","parent"],t:"Aide aux vacances en famille (AVF)",o:"CAF des Pyrénées-Orientales",d:"Si votre quotient familial est de 700 € ou moins, la CAF paie une partie d'un séjour en famille dans un lieu labellisé VACAF : 70 % du coût (QF jusqu'à 370), 60 % (QF 371 à 570) ou 50 % (QF 571 à 700). Les familles concernées sont prévenues sur leur espace CAF, sans démarche.",u:"https://caf.fr/allocataires/caf-des-pyrenees-orientales/offre-de-service/vie-personnelle/les-vacances-et-les-loisirs",l:"CAF 66, vacances et loisirs"},
-{k:["enfant","ado","jeune","parent"],t:"Allocation de rentrée scolaire et aide de rentrée de la CAF 66",o:"CAF des Pyrénées-Orientales",d:"L'allocation de rentrée scolaire est versée automatiquement en août (le 18 août en 2026), sous conditions de ressources. La CAF 66 a aussi une aide de rentrée pour les jeunes de 18 à 21 ans qui n'y ont plus droit. Son guide 2026 indique une aide de 360 € pour un quotient familial de 700 € ou moins au 30 juin 2026, à demander avant le 31 décembre 2026.",u:"https://www.caf.fr/sites/default/files/medias/661/Documents/Guide-Aides-Indiv-AS/2026-Guide-Aides-Indiv-Edition-3-BD.pdf",l:"Guide 2026 des aides de la CAF 66 (PDF)",c:"Vérifiez dans le guide ou au 3230 si l'aide de 360 € correspond bien à votre situation."},
+{k:["enfant","ado","jeune","parent"],t:"Allocation de rentrée scolaire et aide de rentrée de la CAF 66",o:"CAF des Pyrénées-Orientales",dl:"2026-12-31",dlt:"aide de 360 € : à demander avant le 31 décembre 2026",d:"L'allocation de rentrée scolaire est versée automatiquement en août (le 18 août en 2026), sous conditions de ressources. La CAF 66 a aussi une aide de rentrée pour les jeunes de 18 à 21 ans qui n'y ont plus droit. Son guide 2026 indique une aide de 360 € pour un quotient familial de 700 € ou moins au 30 juin 2026, à demander avant le 31 décembre 2026.",u:"https://www.caf.fr/sites/default/files/medias/661/Documents/Guide-Aides-Indiv-AS/2026-Guide-Aides-Indiv-Edition-3-BD.pdf",l:"Guide 2026 des aides de la CAF 66 (PDF)",c:"Vérifiez dans le guide ou au 3230 si l'aide de 360 € correspond bien à votre situation."},
 {k:["enfant","ado","difficulte"],ty:"autre",t:"Familles de la MSA : bons vacances et aide aux loisirs",o:"MSA Grand Sud, 23 rue François Broussais, Perpignan",d:"Pour les familles qui dépendent du régime agricole : aide aux vacances, et aide aux loisirs (jusqu'à 60 € par an pour un enfant de 6 à 13 ans, quotient familial MSA de 850 € ou moins, formulaire rempli par le club). Tél. 04 68 55 11 66.",u:"https://grandsud.msa.fr",l:"MSA Grand Sud",c:"Le site de la MSA n'a pas pu être lu : montants, âges et dates sont à confirmer au 04 68 55 11 66."},
 
 /* Jeunes */
@@ -205,7 +481,7 @@ var A=[
 {k:["senior","retraite"],t:"Trains et cars liO moins chers dès 60 ans : l'offre « + = − »",o:"Région Occitanie, liO",d:"Gratuit et sans engagement, pour les 60 ans et plus. Tout se fait avec l'application FAIRTIQ (gratuite) : vous glissez sur START en montant dans le train ou le car liO, puis sur STOP à l'arrivée, et l'appli calcule le prix. Plus vous voyagez dans le mois, moins vous payez : de -10 % à -90 % selon le mode et le nombre de trajets, dès le 2e trajet du mois. Vous ne payez jamais plus que le prix d'un abonnement mensuel, et un trajet coûte au minimum 1 €. Une cagnotte se déclenche au 11e trajet. Formule DUO : deux personnes de 60 ans et plus peuvent partager le même compte pour voyager ensemble. Le paiement se fait chaque semaine par carte bancaire. Aide : 0 800 31 31 31 (appel gratuit).",p:"un smartphone avec l'application FAIRTIQ et une carte bancaire (ou Apple Pay / Google Pay).",u:"https://www.lio-occitanie.fr/plusegalmoins/",l:"liO Occitanie, offre + = −",c:"Les montants des plafonds mensuels (99 € train et car, 44 € car seul, selon certains guides) ne sont pas écrits sur la page de liO : vérifiez au 0 800 31 31 31."},
 {k:["enfant","ado","jeune","travail","difficulte","retraite","senior"],t:"Train liO à 1 € le premier week-end du mois",o:"Région Occitanie et SNCF Voyageurs",d:"Le premier samedi et le premier dimanche de chaque mois (sauf juillet et août), le trajet en train liO coûte 1 € sur tout le réseau, dans la limite des places. Les billets sont mis en vente une dizaine de jours avant (par exemple le 28 octobre pour le week-end des 7 et 8 novembre 2026). Achat sur le site liO Train, aux guichets des gares (pas aux bornes automatiques), en agence de voyages agréée SNCF, ou avec l'application FAIRTIQ. Valable uniquement en train liO (pas en TGV ni en Intercités). Le tarif à 1 € ne s'ajoute pas aux réductions « + = − ».",u:"https://www.lio-occitanie.fr/actualites/week-end-1e/",l:"liO Occitanie, week-end à 1 €",c:"La date de décembre n'est pas encore annoncée (en suivant la règle : 5 et 6 décembre 2026). Les tarifs enfants (gratuit avant 4 ans, 1 € de 4 à 11 ans, selon un guide) ne sont pas écrits sur la page de liO."},
 {k:["jeune","travail","difficulte"],t:"Location de vélo électrique Sankéo",o:"Sankéo, Perpignan Méditerranée Métropole",d:"Pour les adultes qui habitent ou travaillent dans l'une des 37 communes de la Métropole : 30 € par mois, 85 € par trimestre ou 300 € par an. Dépôt de garantie de 900 € (non encaissé sauf dégât ou vol).",p:"une pièce d'identité, un justificatif de domicile de moins de 3 mois et une carte bancaire pour le dépôt de garantie.",u:"https://velo.sankeo.com/fr/pages/tarifs",l:"Vélo Sankéo, tarifs"},
-{k:["jeune","travail","difficulte","etudiant","senior"],t:"Aide vélo de la Métropole : 250 € à l'achat, 50 € pour une réparation",o:"Perpignan Méditerranée Métropole",d:"Opération renouvelée en 2026, pour les adultes dont la résidence principale est dans l'une des 37 communes de la Métropole, sans condition de revenus et cumulable avec les aides de la Région. Achat : 250 €, 350 € pour les étudiants, 500 € pour un vélo cargo, 1 000 € pour un vélo adapté au handicap. Une seule aide à l'achat par personne. Vélos concernés : vélo neuf, reconditionné ou d'occasion de 600 € à 1 500 € ; vélo pliant neuf de 600 € à 2 000 € ; vélo électrique neuf jusqu'à 2 500 € ; vélo électrique reconditionné ou kit d'électrification jusqu'à 1 500 € ; vélo cargo de 2 000 € à 4 000 € ; vélo adapté sans limite de prix. Réparation : 50 € par an et par personne (révision, freins, pneus, chaîne, selle, assistance électrique… mais pas les accessoires comme panier ou antivol). Comment faire : demandez un devis à l'un des vélocistes partenaires (liste sur le site), puis faites la demande uniquement avec le formulaire en ligne. Une fois le dossier validé, vous recevez un bon d'achat valable 45 jours, à présenter au magasin, qui le déduit en caisse. Questions : accueil.mobilites@perpignan-mediterranee.org.",p:"une pièce d'identité valide (recto-verso) ; un justificatif de domicile de moins de 3 mois (avis d'imposition, quittance de loyer, facture d'électricité, d'eau, de gaz ou d'internet ; pas de facture de téléphone portable) ; le devis du vélociste partenaire ; pour les étudiants, le certificat de scolarité de l'année. Tous les papiers doivent être au même nom.",u:"https://aide-velo.perpignan-mediterranee.org",l:"Aide vélo de la Métropole",c:"L'aide est versée jusqu'à épuisement des crédits : demandez-la tôt. Le bonus étudiant concerne les étudiants inscrits dans un établissement de la Métropole. Seuls les devis faits à partir du 23 mars 2026 comptent."},
+{k:["jeune","travail","difficulte","etudiant","senior","reparer"],t:"Aide vélo de la Métropole : 250 € à l'achat, 50 € pour une réparation",o:"Perpignan Méditerranée Métropole",d:"Opération renouvelée en 2026, pour les adultes dont la résidence principale est dans l'une des 37 communes de la Métropole, sans condition de revenus et cumulable avec les aides de la Région. Achat : 250 €, 350 € pour les étudiants, 500 € pour un vélo cargo, 1 000 € pour un vélo adapté au handicap. Une seule aide à l'achat par personne. Vélos concernés : vélo neuf, reconditionné ou d'occasion de 600 € à 1 500 € ; vélo pliant neuf de 600 € à 2 000 € ; vélo électrique neuf jusqu'à 2 500 € ; vélo électrique reconditionné ou kit d'électrification jusqu'à 1 500 € ; vélo cargo de 2 000 € à 4 000 € ; vélo adapté sans limite de prix. Réparation : 50 € par an et par personne (révision, freins, pneus, chaîne, selle, assistance électrique… mais pas les accessoires comme panier ou antivol). Comment faire : demandez un devis à l'un des vélocistes partenaires (liste sur le site), puis faites la demande uniquement avec le formulaire en ligne. Une fois le dossier validé, vous recevez un bon d'achat valable 45 jours, à présenter au magasin, qui le déduit en caisse. Questions : accueil.mobilites@perpignan-mediterranee.org.",p:"une pièce d'identité valide (recto-verso) ; un justificatif de domicile de moins de 3 mois (avis d'imposition, quittance de loyer, facture d'électricité, d'eau, de gaz ou d'internet ; pas de facture de téléphone portable) ; le devis du vélociste partenaire ; pour les étudiants, le certificat de scolarité de l'année. Tous les papiers doivent être au même nom.",u:"https://aide-velo.perpignan-mediterranee.org",l:"Aide vélo de la Métropole",c:"L'aide est versée jusqu'à épuisement des crédits : demandez-la tôt. Le bonus étudiant concerne les étudiants inscrits dans un établissement de la Métropole. Seuls les devis faits à partir du 23 mars 2026 comptent."},
 {k:["jeune","travail","difficulte","etudiant","senior","retraite"],t:"Éco-chèque vélo électrique de la Région : 200 €",o:"Région Occitanie",d:"200 € pour l'achat d'un vélo électrique neuf chez un professionnel installé en Occitanie, pour les adultes qui habitent la région et dont le revenu fiscal de référence par part est de 14 089 € ou moins (voir votre avis d'imposition). Cumulable avec l'aide vélo de la Métropole. Demande uniquement en ligne, au plus tard 6 mois après l'achat. Le vélo ne doit pas être revendu avant 12 mois. Questions : ecocheque-mobilite@laregion.fr ou 05 61 39 64 39. Si vous êtes salarié et que votre employeur vous verse le forfait mobilités durables (jusqu'à 400 € dans le privé, 200 € dans le public), la Région peut aussi ajouter un bonus, sous conditions de revenus.",p:"une pièce d'identité, un RIB, un justificatif de domicile de moins de 3 mois, la facture d'achat, le certificat d'homologation du vélo et l'avis d'imposition (ou de non-imposition) de l'année avant l'achat.",u:"https://www.laregion.fr/Eco-cheque-mobilite-velo-a-assistance-electrique",l:"Région Occitanie, éco-chèque vélo électrique",c:"Le site ne donne pas de date de fin : vérifiez que l'aide est toujours ouverte. Le montant du bonus pour les salariés est dans le règlement de la Région."},
 {k:["jeune","emploi","difficulte"],t:"Aide du Département pour acheter un vélo (RSA et jeunes)",o:"Département des Pyrénées-Orientales",d:"Une aide pour acheter un vélo, pour les bénéficiaires du RSA et les jeunes de 18 à 25 ans en difficulté. Plateforme de mobilité solidaire, 113 boulevard Aristide Briand, Perpignan. Tél. 04 68 34 76 81.",u:"https://www.ledepartement66.fr",l:"Département 66",c:"Montant (jusqu'à 250 €), adresse et téléphone à confirmer auprès du Département."},
 
@@ -221,7 +497,7 @@ var A=[
 {k:["senior","retraite"],ty:"autre",t:"Carte Avantage Senior SNCF, ou « + = − » : comment choisir",o:"SNCF Voyageurs",d:"La Carte Avantage Senior (60 ans et plus) est payante, à l'année. Elle est surtout utile si vous prenez aussi des TGV INOUI ou des Intercités, en dehors de l'Occitanie. Pour des trajets en train liO seulement (Narbonne, Béziers, Carcassonne, Montpellier, Toulouse…), l'offre « + = − » de la Région est gratuite et devient plus avantageuse si vous voyagez plusieurs fois par mois. Les deux peuvent se compléter si vous faites les deux types de voyages.",u:"https://www.sncf-connect.com/train/cartes-reduction/carte-avantage-senior",l:"SNCF Connect, Carte Avantage Senior",c:"Le site SNCF n'a pas pu être lu : prix (49 € par an selon plusieurs guides) et réductions à vérifier sur SNCF Connect ou en gare."},
 
 /* Santé */
-{k:["retraite","difficulte","travail","etudiant"],t:"Complémentaire santé solidaire (C2S)",o:"Assurance maladie (CPAM)",d:"Une mutuelle gratuite, ou à moins de 1 € par jour, selon vos ressources, sans avance de frais chez le médecin. Gratuite pour une personne seule dont les ressources de l'année sont de 10 421 € ou moins, payante jusqu'à 14 069 € (montants pour la métropole). Demande sur ameli.fr ou à la CPAM.",u:"https://www.service-public.gouv.fr/particuliers/vosdroits/F10027",l:"Service-public.fr, C2S"},
+{k:["difficulte","senior","retraite","jeune","parent","travail","quotidien","handicap","etudiant"],t:"Complémentaire santé solidaire (C2S)",o:"Assurance maladie (CPAM)",d:"Une mutuelle gratuite, ou à moins de 1 € par jour, selon vos ressources, sans avance de frais chez le médecin. Gratuite pour une personne seule dont les ressources de l'année sont de 10 421 € ou moins, payante jusqu'à 14 069 € (montants pour la métropole). Beaucoup de personnes qui y ont droit ne la demandent pas, et renoncent à des soins, des lunettes ou le dentiste. Demande sur ameli.fr ou à la CPAM, ou avec l'aide de France Services. Elle remplace une mutuelle classique : inutile de garder les deux. À Perpignan, elle donne aussi droit à l'abonnement Sankéo à 17,50 € par mois.",p:"votre avis d'imposition, vos ressources des 12 derniers mois, votre carte Vitale et un RIB.",u:"https://www.service-public.gouv.fr/particuliers/vosdroits/F10027",l:"Service-public.fr, C2S"},
 {k:["retraite","senior","handicap","difficulte"],t:"Affection de longue durée (ALD) : soins remboursés à 100 %",o:"Assurance maladie (CPAM)",d:"Pour une maladie grave ou chronique, les soins liés à cette maladie peuvent être pris en charge à 100 % du tarif de la Sécurité sociale. C'est votre médecin traitant qui fait la demande (protocole de soins), à renouveler à la fin de sa durée.",u:"https://www.service-public.gouv.fr/particuliers/vosdroits/F34068",l:"Service-public.fr"},
 {k:["retraite","senior","handicap","difficulte"],t:"Transport médical remboursé (taxi conventionné, VSL, ambulance)",o:"Assurance maladie (CPAM)",d:"Sur prescription médicale faite avant le trajet (sauf urgence), l'Assurance maladie rembourse le transport pour des soins : en général à 55 %, à 100 % dans certains cas comme une ALD. Une franchise est retirée pour le taxi, le VSL et l'ambulance.",u:"https://www.service-public.gouv.fr/particuliers/vosdroits/F2951",l:"Service-public.fr"},
 {k:["difficulte","retraite","jeune"],t:"Examen de prévention en santé (bilan gratuit)",o:"Assurance maladie, Centre d'examens de santé de Perpignan",d:"Un bilan complet d'environ 2 heures, gratuit, dès 16 ans, en priorité pour les personnes qui consultent peu ou sont en difficulté. Inscription par internet, courrier ou téléphone.",u:"https://www.sante.fr/bilan-de-sante-examen-de-prevention-en-sante-eps",l:"Santé.fr"},
@@ -239,7 +515,7 @@ var A=[
 {k:["logement","difficulte"],t:"Conseil gratuit sur le logement (ADIL 66)",o:"ADIL des Pyrénées-Orientales, 2 rue Pierre Dupont, Perpignan",d:"Juristes gratuits pour les locataires et les propriétaires : loyer impayé, risque d'expulsion, logement indigne, travaux, bail. Tél. 04 68 52 00 00.",u:"https://www.anil.org/adil-66/notre-expertise/la-prevention-des-expulsions/",l:"ADIL 66"},
 {k:["logement","difficulte","jeune"],t:"Demander un logement social",o:"Office 66 et autres bailleurs sociaux",d:"La demande de logement social se fait en ligne (office66.fr pour l'office public du Département), ou avec l'aide du CCAS.",u:"https://www.ledepartement66.fr/media/2023/04/GuideUtileDesServices_21x21cm_Decembre2025.pdf",l:"Guide des services du Département (PDF)"},
 {k:["logement","retraite","handicap","senior"],t:"Travaux : rénovation et adaptation du logement",o:"Anah, France Rénov', Département",d:"Depuis le 17 août 2026, toutes les demandes d'aide de l'Anah (MaPrimeRénov', Ma PrimeAdapt' pour adapter son logement à l'âge ou au handicap) passent par un compte unique France Rénov'. Depuis le 1er septembre 2026, MaPrimeRénov' « par geste » ne finance plus que le chauffage (pompe à chaleur, géothermie, réseau de chaleur…) et l'audit énergétique : l'isolation et les fenêtres n'en font plus partie. Conseil gratuit à l'ADIL 66 (04 68 52 00 00).",u:"https://www.anil.org/adil-66/toutes-nos-actualites/details/aides-a-la-renovation-energetiques-ce-qui-change-au-1er-septembre-2026/",l:"ADIL 66, changements au 1er septembre 2026"},
-{k:["logement","retraite","handicap","senior","difficulte"],t:"« Mieux se loger 66 » : aide du Département pour les travaux",o:"Département des Pyrénées-Orientales",d:"Une aide aux travaux dans les logements privés, en plus des aides de l'État (MaPrimeAdapt', MaPrimeRénov', Ma Prime Logement Décent), pour trois types de travaux : économiser l'énergie, remettre en état un logement indécent ou dégradé, adapter le logement à l'âge ou au handicap. Pour les propriétaires qui habitent leur logement et ont des revenus modestes ou très modestes, et pour les propriétaires qui louent à loyer social. Ouverte jusqu'au 31 décembre 2026. Renseignements : mieuxseloger66@cd66.fr ou 04 30 19 25 20, et l'ADIL 66 au 04 68 52 00 00.",u:"https://www.ledepartement66.fr/aide/le-programme-mieux-se-loger-66/",l:"Département 66, Mieux se loger 66",c:"Le montant de l'aide par logement n'est pas indiqué : demandez-le avant de signer un devis."},
+{k:["logement","retraite","handicap","senior","difficulte"],t:"« Mieux se loger 66 » : aide du Département pour les travaux",o:"Département des Pyrénées-Orientales",dl:"2026-12-31",dlt:"demande ouverte jusqu'au 31 décembre 2026",d:"Une aide aux travaux dans les logements privés, en plus des aides de l'État (MaPrimeAdapt', MaPrimeRénov', Ma Prime Logement Décent), pour trois types de travaux : économiser l'énergie, remettre en état un logement indécent ou dégradé, adapter le logement à l'âge ou au handicap. Pour les propriétaires qui habitent leur logement et ont des revenus modestes ou très modestes, et pour les propriétaires qui louent à loyer social. Ouverte jusqu'au 31 décembre 2026. Renseignements : mieuxseloger66@cd66.fr ou 04 30 19 25 20, et l'ADIL 66 au 04 68 52 00 00.",u:"https://www.ledepartement66.fr/aide/le-programme-mieux-se-loger-66/",l:"Département 66, Mieux se loger 66",c:"Le montant de l'aide par logement n'est pas indiqué : demandez-le avant de signer un devis."},
 {k:["logement","retraite","handicap"],t:"Mieux se loger 66",o:"Département des Pyrénées-Orientales",d:"Aide du Département aux travaux pour les propriétaires aux revenus modestes : économies d'énergie, logement indécent, adaptation à la perte d'autonomie. Contact : mieuxseloger66@cd66.fr ou 04 30 19 25 20.",p:"votre dernier avis d'imposition, un justificatif de propriété et des devis d'artisans.",u:"https://www.ledepartement66.fr",l:"Département 66",c:"Conditions, montants et date limite (31 décembre 2026 selon le premier relevé) à confirmer auprès du Département."},
 {k:["retraite","difficulte","logement"],t:"Chèque énergie",o:"État (envoi automatique)",d:"Envoyé automatiquement par courrier au printemps si vos revenus sont modestes et que vous avez fait votre déclaration de revenus. Il sert à payer électricité, gaz, fioul, bois ou certains travaux.",u:"https://chequeenergie.gouv.fr",l:"chequeenergie.gouv.fr",c:"Montants 2026 (48 à 277 € selon le premier relevé) et date limite d'utilisation à vérifier sur chequeenergie.gouv.fr."},
 {k:["difficulte","logement"],t:"Aide pour payer les factures d'eau",o:"CCAS de Perpignan, avec Veolia",d:"Un dispositif social de Veolia Eau, géré par le CCAS, aide à payer les factures d'eau. Pour les habitants de Perpignan non imposables qui ont un contrat Veolia. Il faut d'abord payer un acompte d'au moins 30 % de la facture. Contact : Pôle Action Sociale, 04 68 34 95 22, service.social@ccas-perpignan.fr.",p:"votre dernière facture Veolia, votre avis de non-imposition, une pièce d'identité et un justificatif de domicile.",u:"https://www.perpignan.fr/solidarite/centre-communal-daction-sociale/pole-action-sociale",l:"Ville de Perpignan, Pôle Action Sociale",c:"La liste des papiers à apporter n'est pas publiée : demandez-la au 04 68 34 95 22."},
@@ -248,9 +524,9 @@ var A=[
 /* Aide alimentaire et urgence */
 {k:["difficulte","parent","enfant","retraite"],ty:"asso",t:"Restos du Cœur à Perpignan : repas, camion du soir et accompagnement",o:"Restos du Cœur des Pyrénées-Orientales",d:"Centre d'activités Anatole France, 12 boulevard Anatole France, tél. 04 68 85 04 53 : aide alimentaire, aide pour les enfants et les familles, accompagnement au budget et microcrédit, cours de français, sorties culture et loisirs. Ouvert les mardi, mercredi et jeudi de 9 h à 12 h 30 et de 14 h à 17 h 30, le samedi de 14 h à 17 h 30. Inscriptions uniquement à partir de 14 h. En juillet et août, distribution tous les 15 jours. Camion du Cœur, pour les personnes à la rue, de 17 h à 18 h 30 : lundi et vendredi devant l'hôpital (parking annexe mairie Nord, 210 avenue du Languedoc), mardi et jeudi rue Suzanne Noël. Siège départemental : 27 rue Adolphe Monticelli.",p:"une pièce d'identité et les justificatifs de vos ressources et de vos charges (liste exacte à demander à l'inscription).",u:"https://ad66.restosducoeur.org/centres-departementaux/ad66-centre-dactivites-perpignan-3/",l:"Restos du Cœur 66, centre Anatole France",u2:"https://ad66.restosducoeur.org/centres-departementaux/836/",l2:"Restos du Cœur 66, Camion du Cœur"},
 {k:["difficulte","enfant","retraite"],ty:"asso",t:"Secours populaire des Pyrénées-Orientales",o:"Secours populaire, 8 rue Léon-Paul Fargue, Perpignan",d:"Aide alimentaire, vêtements, soutien scolaire, vacances et accès aux droits. Tél. 04 26 48 79 92. Accueil le lundi de 14 h à 17 h, du mardi au vendredi de 9 h à 12 h et de 14 h à 17 h.",u:"https://www.secourspopulaire.fr/66/",l:"Secours populaire 66"},
-{k:["difficulte","enfant","retraite"],ty:"asso",t:"Épicerie solidaire du Secours Catholique",o:"Secours Catholique, équipe des Romarins, 5 rue des Romarins, Perpignan",d:"La Maison des fraternités des Romarins, dans le quartier Saint-Martin, est tenue par des bénévoles et ouverte du lundi au vendredi de 14 h à 17 h : accompagnement personnel et ateliers (apprendre à lire et écrire le français, couture, informatique…). On y trouve aussi une épicerie solidaire avec produits frais, sur rendez-vous après un premier accueil, et de l'accompagnement scolaire. Tél. 04 68 81 95 27, perpignansud@laposte.net.",u:"https://auderoussillon.secours-catholique.org/nous-contacter",l:"Secours Catholique Aude-Roussillon",u2:"https://portail-associations.cd66.fr/places/maison-des-fraternites-romarins-du-secours-catholique/",l2:"portail des associations du Département, Maison des fraternités",c:"Les jours de l'épicerie solidaire ne sont pas publiés (certains annuaires donnent mardi et jeudi matin et après-midi) : appelez avant de vous déplacer."},
+{k:["difficulte","enfant","retraite","langue","numerique"],ty:"asso",t:"Épicerie solidaire du Secours Catholique",o:"Secours Catholique, équipe des Romarins, 5 rue des Romarins, Perpignan",d:"La Maison des fraternités des Romarins, dans le quartier Saint-Martin, est tenue par des bénévoles et ouverte du lundi au vendredi de 14 h à 17 h : accompagnement personnel et ateliers (apprendre à lire et écrire le français, couture, informatique…). On y trouve aussi une épicerie solidaire avec produits frais, sur rendez-vous après un premier accueil, et de l'accompagnement scolaire. Tél. 04 68 81 95 27, perpignansud@laposte.net.",u:"https://auderoussillon.secours-catholique.org/nous-contacter",l:"Secours Catholique Aude-Roussillon",u2:"https://portail-associations.cd66.fr/places/maison-des-fraternites-romarins-du-secours-catholique/",l2:"portail des associations du Département, Maison des fraternités",c:"Les jours de l'épicerie solidaire ne sont pas publiés (certains annuaires donnent mardi et jeudi matin et après-midi) : appelez avant de vous déplacer."},
 {k:["difficulte"],ty:"asso",t:"Cantine solidaire MIAM",o:"MIAM Collectif, centre-ville de Perpignan",d:"Cantine solidaire au centre-ville, repas à prix libre (chacun donne ce qu'il peut). Contact : miam.collectif@lilo.org.",u:"https://www.jeveuxaider.gouv.fr/organisations/37481-miam-collectif",l:"JeVeuxAider.gouv.fr, MIAM Collectif",c:"Adresse et jours d'ouverture à demander par e-mail."},
-{k:["difficulte","etudiant","jeune","retraite","senior"],ty:"asso",t:"Cantine solidaire du Miam : repas à prix libre",o:"Miam Collectif, cantine associative anti-gaspi, 3 rue Petite la Monnaie, Perpignan",d:"Repas végétariens à prix libre : chacun paie selon ses moyens, sans gêne : il n'y a pas de « mauvais prix » (le Miam suggère 12 € ou plus à ceux qui en ont les moyens). Une cantine participative et conviviale, créée par des habitants du quartier. Cantine du mardi au samedi de 12 h 15 à 13 h 45, café associatif du mardi au samedi de 11 h à 15 h. Adhésion obligatoire de 5 € par an, gratuite pour les personnes en situation de précarité.",u:"https://miamcollectif.org/",l:"Miam Collectif",c:"Pas de téléphone sur le site : vérifiez les horaires sur leur page Facebook ou Instagram avant de vous déplacer."},
+{k:["difficulte","etudiant","jeune","retraite","senior","seul"],ty:"asso",t:"Cantine solidaire du Miam : repas à prix libre",o:"Miam Collectif, cantine associative anti-gaspi, 3 rue Petite la Monnaie, Perpignan",d:"Repas végétariens à prix libre : chacun paie selon ses moyens, sans gêne : il n'y a pas de « mauvais prix » (le Miam suggère 12 € ou plus à ceux qui en ont les moyens). Une cantine participative et conviviale, créée par des habitants du quartier. Cantine du mardi au samedi de 12 h 15 à 13 h 45, café associatif du mardi au samedi de 11 h à 15 h. Adhésion obligatoire de 5 € par an, gratuite pour les personnes en situation de précarité.",u:"https://miamcollectif.org/",l:"Miam Collectif",c:"Pas de téléphone sur le site : vérifiez les horaires sur leur page Facebook ou Instagram avant de vous déplacer."},
 {k:["difficulte"],ty:"asso",t:"Banque alimentaire : passer par une association",o:"Banque alimentaire des Pyrénées-Orientales",d:"Elle ne distribue pas directement : elle approvisionne une soixantaine d'associations. Adressez-vous au CCAS ou à une association (Restos du Cœur, Secours populaire…).",u:"https://www.jeveuxaider.gouv.fr/missions-benevolat/8865/benevolat-banque-alimentaire-des-pyrenees-orientales-perpignan-1",l:"JeVeuxAider.gouv.fr"},
 {k:["difficulte","logement"],t:"Douche et laverie sociales Casa Jaumet",o:"CCAS de Perpignan, 11 bis rue des Carmes",d:"Pour les personnes sans domicile stable ou en grande précarité : douche et lessive. Ouvert les lundi, mardi, jeudi et vendredi de 9 h à 12 h et de 14 h à 17 h, le mercredi de 9 h à 12 h (fermé le mercredi après-midi). Tél. 04 68 50 52 85.",u:"https://www.perpignan.fr/solidarite/centre-communal-daction-sociale/pole-action-sociale",l:"Ville de Perpignan, Pôle Action Sociale"},
 {k:["difficulte","logement"],t:"Domiciliation : recevoir son courrier sans adresse stable",o:"Croix-Rouge, Espace solidaire, avenue du Docteur Torreilles",d:"Une adresse pour recevoir votre courrier et faire vos démarches (CAF, santé, papiers). À Perpignan, c'est la Croix-Rouge qui s'en occupe. Tél. 04 68 39 10 99.",u:"https://www.perpignan.fr/solidarite/centre-communal-daction-sociale",l:"Ville de Perpignan, CCAS",c:"Adresse et téléphone de la Croix-Rouge à confirmer, ou demandez au CCAS (04 68 34 44 53)."},
@@ -258,19 +534,41 @@ var A=[
 /* Culture et loisirs */
 {k:["enfant","ado","jeune","senior","parent"],t:"Piscines de Perpignan : tarifs enfants et seniors",o:"Espaces aquatiques Arlette Franco et Moulin à Vent",d:"Arlette Franco (2 rue du Méridien, tél. 04 68 62 70 01) : adulte 5,50 €, enfant 8-17 ans 3,50 €, enfant 2-7 ans 2,50 €, senior (60 ans et plus) 4,50 €. Moulin à Vent (80 avenue Paul Alduy, tél. 04 68 68 46 68) : adulte 6,50 €, enfant 8-17 ans 4,50 €, enfant 2-7 ans 3,50 €, senior 5,50 €. Gratuit pour les bébés de moins de 2 ans dans les deux piscines. Cartes de 10 entrées (Arlette Franco : 40 € adulte, 30 € enfant 8-17 ans, 20 € enfant 2-7 ans, 35 € senior ; Moulin à Vent : 50 €, 35 €, 25 €, 45 €) et carte annuelle (210 € et 250 €), valables un an, une entrée par jour. Bonnet de bain obligatoire.",u:"https://www.tourisme-pyreneesorientales.com/activites/piscine-espace-aquatique-arlette-franco-perpignan-fr-5744619/",l:"Tourisme Pyrénées-Orientales, Arlette Franco",c:"Les entrées simples sont confirmées par l'agence de tourisme du Département. Les prix des cartes de 10 entrées et annuelles viennent du site des piscines et n'ont pas pu être relus : vérifiez à l'accueil."},
 {k:["enfant","ado","parent"],ty:"autre",t:"Idées de sorties en famille gratuites ou pas chères",o:"Guide de l'appli Oniva (entreprise privée)",d:"Un guide pratique des sorties en famille à Perpignan : musées gratuits (Muséum), Castillet, parcs, lac, bus et parkings, avec les pièges à éviter (jours de fermeture). Pratique pour trouver une idée de dernière minute.",u:"https://onivapp.com/blog/que-faire-perpignan-en-famille",l:"Oniva, que faire à Perpignan en famille",c:"Guide écrit par une entreprise, sans source officielle pour les prix et horaires : vérifiez-les sur le site du lieu avant de partir."},
-{k:["jeune","ado","enfant","etudiant","difficulte","senior"],t:"Musées, piscines, médiathèques : tarifs réduits",o:"Ville de Perpignan et Métropole",d:"Muséum, Musée des Monnaies et Casa Xanxo gratuits. Musée Rigaud : 8 € (11 € pendant une exposition temporaire), tarif réduit 6 € ou 9 € (demandeurs d'emploi, inscrits à la médiathèque de la Ville…), gratuit pour les moins de 18 ans, les étudiants de moins de 26 ans, les bénéficiaires du RSA et les personnes handicapées ; Pass Musée 25 € pour un an. Castillet gratuit pour les moins de 26 ans. Médiathèques : inscription gratuite pour les moins de 18 ans. Conservatoire : tarifs selon le quotient familial (grille 2026-2027 sur la page « Inscription » de son site, crr-perpignanmediterraneemetropole.fr, tél. 04 68 08 63 70). Piscines : voir la fiche « Piscines de Perpignan ».",p:"une pièce d'identité ou une carte d'étudiant ; une attestation de quotient familial pour le Conservatoire.",u:TARIFS,l:"Tarifs 2025 de la Ville (PDF)",u2:"https://www.musee-rigaud.fr/pratique",l2:"Musée Rigaud, tarifs",c:"La gratuité du Castillet et l'inscription aux médiathèques viennent des tarifs 2025 de la Ville : à confirmer pour 2026. La grille du Conservatoire n'a pas pu être lue (document en ligne) : demandez-la à l'accueil."}
+{k:["jeune","ado","enfant","etudiant","difficulte","senior"],t:"Musées, piscines, médiathèques : tarifs réduits",o:"Ville de Perpignan et Métropole",d:"Muséum, Musée des Monnaies et Casa Xanxo gratuits. Musée Rigaud : 8 € (11 € pendant une exposition temporaire), tarif réduit 6 € ou 9 € (demandeurs d'emploi, inscrits à la médiathèque de la Ville…), gratuit pour les moins de 18 ans, les étudiants de moins de 26 ans, les bénéficiaires du RSA et les personnes handicapées ; Pass Musée 25 € pour un an. Castillet gratuit pour les moins de 26 ans. Médiathèques : inscription gratuite pour les moins de 18 ans. Conservatoire : tarifs selon le quotient familial (grille 2026-2027 sur la page « Inscription » de son site, crr-perpignanmediterraneemetropole.fr, tél. 04 68 08 63 70). Piscines : voir la fiche « Piscines de Perpignan ».",p:"une pièce d'identité ou une carte d'étudiant ; une attestation de quotient familial pour le Conservatoire.",u:TARIFS,l:"Tarifs 2025 de la Ville (PDF)",u2:"https://www.musee-rigaud.fr/pratique",l2:"Musée Rigaud, tarifs",c:"La gratuité du Castillet et l'inscription aux médiathèques viennent des tarifs 2025 de la Ville : à confirmer pour 2026. La grille du Conservatoire n'a pas pu être lue (document en ligne) : demandez-la à l'accueil."},
+
+/* Numérique */
+{k:["numerique","senior","retraite","difficulte","quotidien"],t:"France Services : aide gratuite pour les démarches en ligne",o:"État, France Services Perpignan Centre, rue Michel Carola",d:"Des conseillers vous aident gratuitement à faire vos démarches en ligne : CAF, impôts, France Travail, Assurance retraite, titre de séjour, justificatifs. Ils peuvent aussi vous orienter vers un conseiller numérique. Rue Michel Carola, tél. 04 68 66 30 47, perpignan-centre@france-services.gouv.fr. Ouvert le lundi, mardi et mercredi de 12 h 45 à 17 h, le jeudi de 8 h 30 à 12 h et de 12 h 45 à 17 h, le vendredi de 13 h à 16 h 30. Appelez avant de venir pour préparer votre rendez-vous.",u:"https://www.france-services.gouv.fr/le-reseau/france-services-perpignan-centre",l:"France services, Perpignan Centre"},
+{k:["numerique","senior","logement","quotidien"],t:"Ateliers numériques gratuits avec accompagnement personnalisé",o:"Habitat Perpignan Méditerranée, avec la régie de quartier La Roseraie Services",d:"Ateliers gratuits pour apprendre à utiliser un ordinateur, un smartphone et les démarches en ligne, avec un accompagnement personnalisé. CAF, France Travail, smartphone, e-mails… De 14 h 30 à 16 h 30, au 51 square Pradelles (Bas-Vernet) et au 1 rue René Coll (Vernet Salanque). Inscription obligatoire à l'accueil.",u:"https://www.habitat-pm.fr/des-ateliers-numeriques-gratuits/",l:"Habitat Perpignan Méditerranée",c:"Annonce de septembre 2022 : vérifiez auprès de La Roseraie Services que les ateliers ont toujours lieu, et quels jours."},
+
+/* Langues */
+{k:["langue","difficulte","parent","enfant"],ty:"asso",t:"Apprendre le français : ateliers des Restos du Cœur",o:"Restos du Cœur des Pyrénées-Orientales",d:"14 ateliers de français ouverts dans le département pour les personnes accueillies par les Restos : maîtrise de la langue française, accompagnement scolaire et aide aux devoirs pour les enfants. Inscription sur rendez-vous. À Perpignan, des ateliers ont lieu notamment place Carola (Maison du Centre historique) et au Bas-Vernet. Renseignements : 04 68 85 04 53.",u:"https://ad66.restosducoeur.org/centres-departementaux/915/",l:"Restos du Cœur 66, ateliers de français"},
+{k:["langue"],ty:"asso",t:"Welcome 66 : cours de français pour les personnes exilées",o:"Welcome 66, association à Perpignan",d:"Des cours de français ouverts aux personnes exilées dès leur arrivée à Perpignan, y compris pendant la demande d'asile, pour se sentir chez soi et se lancer dans les démarches du quotidien. Ateliers de 2 heures, en 4 niveaux (de débutant à confirmé), quatre jours par semaine. Contact par le formulaire du site.",u:"https://welcome66.fr/decouvrir-nos-activites/apprendre-le-francais/",l:"Welcome 66, apprendre le français",c:"Lieu et horaires des ateliers : à demander à l'association."},
+{k:["langue","senior","quotidien"],ty:"asso",t:"Apprendre ou perfectionner une langue (français, espagnol…)",o:"Centro Espagnol de Perpignan, association culturelle",d:"Association culturelle qui propose des cours de français langue étrangère (FLE) et des activités autour des langues. Les cours de français sont gratuits pour les adhérents. Contacts et horaires sur leur site.",u:"https://centroespagnol.fr/cours-de-francais/",l:"Centro Espagnol de Perpignan",c:"Prix de l'adhésion à demander à l'association."},
+
+/* Ne pas rester seul */
+{k:["seul","senior","retraite","quotidien","parent"],t:"Espaces Citoyens : lieux de rencontre et d'activités dans les quartiers",o:"Ville de Perpignan",d:"Des équipements de proximité ouverts à tous les habitants du quartier : lieux de rencontre, d'échange et d'activités intergénérationnelles, avec un accompagnement des habitants pour leurs projets. Un endroit simple pour sortir, rencontrer du monde et trouver des activités près de chez soi. Une douzaine d'Espaces Citoyens dans les quartiers (adresses et téléphones sur le site de la Ville) ; renseignements à la direction Jeunesse et Citoyenneté : 04 11 64 63 62.",u:"https://www.mairie-perpignan.fr/solidarite/espaces-citoyens",l:"Ville de Perpignan, Espaces Citoyens",c:"Horaires de chaque Espace Citoyen : appelez celui de votre quartier."},
+{k:["seul","senior","retraite"],ty:"asso",t:"Petits Frères des Pauvres : visites et sorties pour personnes âgées isolées",o:"Les Petits Frères des Pauvres de Perpignan",d:"Des bénévoles rendent visite à domicile aux personnes âgées isolées, quel que soit leur lieu de vie, et organisent des rencontres, des sorties et des activités pour rompre l'isolement. Gratuit pour les personnes accompagnées ; l'association recherche aussi des bénévoles. Tél. 06 07 04 86 72.",u:"https://www.petitsfreresdespauvres.fr/nos-implantations/fraternite-regionale-occitanie/les-petits-freres-des-pauvres-de-perpignan/",l:"Petits Frères des Pauvres, Perpignan"},
+
+/* Réparer */
+{k:["reparer","difficulte","quotidien"],ty:"asso",t:"Repair Café : des bénévoles réparent vos objets gratuitement",o:"Repair Café de Toulouges (près de Perpignan), association",d:"Une fois par mois, des bricoleurs bénévoles réparent avec vous vos objets du quotidien : petit électroménager (micro-ondes, aspirateur, grille-pain), téléviseur, radiateur, vélo, vêtements, meubles, outils de bricolage… Les réparations sont gratuites ; seules les pièces de rechange restent à votre charge, après accord. Environ une fois par mois, à la salle des fêtes de Toulouges, uniquement sur rendez-vous pris par téléphone au 06 64 98 02 31 (les dates d'ouverture des réservations sont annoncées sur leur site).",u:"https://repaircafeperpignan.wordpress.com/",l:"Repair Café Perpignan-Toulouges",c:"Les places partent vite : consultez leur site pour la prochaine date."},
+
+/* Aidants familiaux */
+{k:["aidant","senior","handicap","quotidien"],t:"Aidant familial : vos droits (congé, allocation, répit)",o:"État et Département des Pyrénées-Orientales",d:"Si vous aidez régulièrement un proche âgé, malade ou handicapé, vous avez des droits que beaucoup ignorent : le congé de proche aidant (3 mois au plus, renouvelable, dans la limite d'un an sur toute la carrière, indemnisé par l'allocation journalière du proche aidant, 66,64 € par jour, sous conditions), le droit au répit du Département (accueil de jour, hébergement temporaire pour la personne aidée, pour vous souffler), et des plateformes d'accompagnement et de répit qui proposent soutien et groupes de parole. Le Pôle Senior Autonomie du CCAS (04 68 34 88 34) et la MDPH (04 68 39 99 00) vous orientent.",p:"votre lien avec la personne aidée, son avis de situation (APA ou MDPH selon le cas) et vos justificatifs de ressources pour l'AJPA.",u:"https://www.pour-les-personnes-agees.gouv.fr/solutions-pour-les-aidants/soutien-financier/l-allocation-journaliere-du-proche-aidant-qu-est-ce-que-c-est",l:"Portail national pour les personnes âgées, AJPA",u2:"https://www.service-public.gouv.fr/particuliers/vosdroits/F16920",l2:"Service-public.fr, congé de proche aidant",c:"Votre convention collective peut prévoir d'autres durées : renseignez-vous auprès de votre employeur. Le droit au répit et les plateformes d'accompagnement : demandez au CCAS ou à la MDPH."},
+
+/* Santé (fiche complémentaire) */
 ];
 
-/* ---------- Affichage ---------- */
+/* ============================================================
+   AFFICHAGE (fonctions utilitaires)
+   ============================================================ */
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
-/* Rend cliquables les numéros (04 68 34 44 53, 0 800 800 370, 3230) et les e-mails */
 function linkify(s){
   return esc(s)
    .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,function(m){return '<a href="mailto:'+m+'">'+m+'</a>'})
    .replace(/\b0 ?\d{1,3}(?: \d{2,3}){2,4}\b/g,function(m){return '<a href="tel:'+m.replace(/ /g,"")+'">'+m+'</a>'})
    .replace(/\b(3230|3114|3919|3133|3960)\b(?![^<]*<\/a>)/g,'<a href="tel:$1">$1</a>');
 }
-var OFFICIAL=/(\.gouv\.fr|(^|\.)caf\.fr|(^|\.)msa\.fr|(^|\.)ameli\.fr|assurance-maladie\.fr|(^|\.)perpignan\.fr|mairie-perpignan\.fr|ledepartement66\.fr|laregion\.fr|perpignan-mediterranee\.org|sankeo\.com|airweb\.fr|anil\.org|mlj66\.org|pass\.culture\.fr|francetravail\.fr|sante\.fr|ter\.sncf\.com|lio-occitanie\.fr|lescrous\.fr|lassuranceretraite\.fr|crous-montpellier\.fr|tourisme-pyreneesorientales\.com)$/;
+var OFFICIAL=/(\.gouv\.fr|(^|\.)caf\.fr|(^|\.)msa\.fr|(^|\.)ameli\.fr|assurance-maladie\.fr|(^|\.)perpignan\.fr|mairie-perpignan\.fr|ledepartement66\.fr|laregion\.fr|perpignan-mediterranee\.org|sankeo\.com|airweb\.fr|anil\.org|mlj66\.org|pass\.culture\.fr|francetravail\.fr|sante\.fr|ter\.sncf\.com|lio-occitanie\.fr|lescrous\.fr|lassuranceretraite\.fr|crous-montpellier\.fr|tourisme-pyreneesorientales\.com|habitat-pm\.fr|france-services\.gouv\.fr)$/;
 function kind(a){if(a.ty)return a.ty;var h=a.u.replace(/^https?:\/\//,"").split("/")[0];return OFFICIAL.test(h)?"off":"autre"}
 var LABEL={off:["b-off","Site officiel"],asso:["b-asso","Association"],autre:["b-oth","Autre source"]};
 
@@ -288,33 +586,272 @@ function qfLine(a){
 }
 function card(a){
   var kd=LABEL[kind(a)];
-  return '<article class="card"><div class="badges"><span class="badge '+kd[0]+'">'+kd[1]+'</span>'+(a.c?'<span class="badge b-chk">À vérifier</span>':'')+'</div>'+
+  var fb='mailto:citymemo66@gmail.com?subject='+encodeURIComponent('Erreur sur une fiche : '+a.t);
+  return '<article class="card" data-fiche-rendered="'+esc(a.t)+'">'+
+    '<div class="badges"><span class="badge '+kd[0]+'">'+kd[1]+'</span>'+(a.c?'<span class="badge b-chk">À vérifier</span>':'')+dlBadge(a)+'</div>'+
     '<h3>'+esc(a.t)+'</h3><div class="org">'+esc(a.o)+'</div><p>'+linkify(a.d)+'</p>'+(a.qf?qfLine(a):'')+
     (a.p?'<p class="pj"><strong>À préparer :</strong> '+linkify(a.p)+'</p>':'')+
     (a.c?'<p class="chk"><strong>À vérifier :</strong> '+linkify(a.c)+'</p>':'')+
-    '<p class="src"><a href="'+esc(a.u)+'" target="_blank" rel="noopener">Source : '+esc(a.l)+'<span class="sr"> (s\'ouvre dans un nouvel onglet)</span></a>'+(a.u2?'<br><a href="'+esc(a.u2)+'" target="_blank" rel="noopener">Source : '+esc(a.l2)+'<span class="sr"> (s\'ouvre dans un nouvel onglet)</span></a>':'')+'</p></article>';
+    '<p class="src"><a href="'+esc(a.u)+'" target="_blank" rel="noopener">Source : '+esc(a.l)+'<span class="sr"> (s\'ouvre dans un nouvel onglet)</span></a>'+(a.u2?'<br><a href="'+esc(a.u2)+'" target="_blank" rel="noopener">Source : '+esc(a.l2)+'<span class="sr"> (s\'ouvre dans un nouvel onglet)</span></a>':'')+'<br><a href="'+fb+'">Signaler une erreur sur cette fiche</a></p></article>';
 }
 function render(){
-  var sel=selected();
+  var sel=selected(),q=document.getElementById("search").value.trim().toLowerCase();
   opts.querySelectorAll("label.opt").forEach(function(l){l.classList.toggle("on",l.querySelector("input").checked)});
-  document.getElementById("btn-clear").disabled=!sel.length;
+  document.getElementById("btn-clear").disabled=!sel.length&&!q;
+  document.getElementById("only-sel").disabled=!sel.length;
+  renderUrg(sel);
   var cnt=document.getElementById("results"),out=document.getElementById("out");
-  if(!sel.length){
+  if(!sel.length&&!q){
     cnt.textContent="Cochez au moins une case pour voir les aides. Pour commencer :";
     out.innerHTML=A.filter(function(a){return a.start}).map(card).join("");
     return;
   }
-  var list=A.map(function(a,i){return {a:a,i:i,n:a.k.filter(function(x){return sel.indexOf(x)>-1}).length}})
-    .filter(function(x){return x.n>0})
+  var pool=q?A.filter(function(a){return (a.t+" "+a.o+" "+a.d+" "+(a.p||"")+" "+(a.c||"")).toLowerCase().indexOf(q)>-1}):A;
+  var list=pool.map(function(a,i){return {a:a,i:i,n:a.k.filter(function(x){return sel.indexOf(x)>-1}).length}})
+    .filter(function(x){return x.n>0||q})
     .sort(function(x,y){return (y.a.start?0:1)-(x.a.start?0:1)||(y.n-x.n)||(x.i-y.i)});
-  cnt.textContent=list.length+(list.length>1?" aides et services pour votre situation":" aide pour votre situation");
+  cnt.textContent=q?(list.length+(list.length>1?" aides trouvées pour « "+q+" »":" aide trouvée pour « "+q+" »")):(list.length+(list.length>1?" aides et services pour votre situation":" aide pour votre situation"));
   out.innerHTML=list.map(function(x){return card(x.a)}).join("");
 }
+function renderPlan(){
+  var v=document.getElementById("diff1").value,p=document.getElementById("plan");
+  if(!v||!DIFFS[v]){p.hidden=true;p.innerHTML="";return}
+  var d=DIFFS[v];
+  p.innerHTML='<h3>🎯 Vos 3 démarches prioritaires — '+esc(d[0])+'</h3><ol>'+d[1].map(function(s){return '<li>'+linkify(s)+'</li>'}).join('')+'</ol>';
+  p.hidden=false;
+}
+function renderUrg(sel){
+  var on=sel.indexOf("difficulte")>-1&&(sel.indexOf("logement")>-1||sel.indexOf("parent")>-1);
+  document.getElementById("urg-flag").hidden=!on;
+}
+function renderNr(){
+  var n=[].slice.call(document.querySelectorAll(".nr")).filter(function(i){return i.checked}).length;
+  var m=document.getElementById("nr-msg");
+  var labs={caf:"la CAF",ccas:"le CCAS de Perpignan",fs:"France Services",ft:"France Travail ou la Mission locale"};
+  document.querySelectorAll(".nr").forEach(function(i){i.closest("label.opt").classList.toggle("on",i.checked)});
+  if(n===0)m.textContent="Astuce : si vous n'avez jamais contacté l'un de ces guichets, commencez par là — beaucoup de droits sommeillent.";
+  else{var miss=Object.keys(labs).filter(function(k){return !document.querySelector('.nr[value="'+k+'"]').checked});
+    m.textContent=miss.length?("Vous n'avez jamais contacté : "+miss.map(function(k){return labs[k]}).join(", ")+". Un simple appel peut débloquer des aides."):("Vous avez déjà fait le tour des principaux guichets, bravo. Pensez aussi au Département (FSL, MDPH) et à votre caisse de retraite le cas échéant.")}
+}
+function dlBadge(a){
+  if(!a.dl)return"";
+  var d=new Date(a.dl+"T23:59:59"),days=Math.ceil((d-Date.now())/864e5);
+  if(isNaN(d))return"";
+  if(days<0)return '<span class="badge b-dl">Échéance passée : '+esc(a.dlt||a.dl)+'</span>';
+  return '<span class="badge b-dl'+(days<=30?' soon':'')+'">⏰ '+esc(a.dlt||('avant le '+a.dl))+(days<=30?' — plus que '+days+' jours !':'')+'</span>';
+}
+
+/* ============================================================
+   DÉTECTEUR DE DROITS NON RÉCLAMÉS
+   ============================================================ */
+var DET = [
+  {id:"mutuelle", q:"Payez-vous une complémentaire santé (mutuelle) plus de 50 € par mois ?", risk:true,
+   droits:[{t:"Complémentaire santé solidaire (C2S)", fiche:"Complémentaire santé solidaire (C2S)", guichet:"Ameli / CAF", why:"Si vos revenus sont modestes, la C2S peut remplacer votre mutuelle, gratuitement ou pour moins de 1 € par jour."}]},
+  {id:"dentiste", q:"Avez-vous renoncé à des soins (dentiste, lunettes, médecin) pour des raisons d'argent ces 12 derniers mois ?", risk:true,
+   droits:[{t:"Complémentaire santé solidaire (C2S)", fiche:"Complémentaire santé solidaire (C2S)", guichet:"Ameli (3646)", why:"Le renoncement aux soins est le signal n°1 d'un droit à la C2S non activé."},
+           {t:"Examen de prévention en santé (bilan gratuit)", fiche:"Examen de prévention en santé (bilan gratuit)", guichet:"Centre d'examens de santé", why:"Bilan complet gratuit dès 16 ans, en priorité pour ceux qui consultent peu."}]},
+  {id:"loyer", q:"Pensez-vous consacrer plus de 35 % de vos revenus à votre loyer ?", risk:true,
+   droits:[{t:"Aides au logement (APL)", fiche:"Aides au logement (APL)", guichet:"CAF (3230)", why:"Une simulation CAF prend 5 minutes et révèle souvent une APL oubliée."},
+           {t:"Loyer impayé, accès à un logement : aides du Département (FSL)", fiche:"Loyer impayé, accès à un logement : aides du Département (FSL)", guichet:"Département 66, 04 30 19 25 20", why:"Le FSL peut aider à payer un impayé ou l'entrée dans un logement."}]},
+  {id:"isole", q:"Habitez-vous seul(e) et voyez-vous moins de 2 personnes par semaine ?", risk:true,
+   droits:[{t:"Espaces Citoyens", fiche:"Espaces Citoyens : lieux de rencontre et d'activités dans les quartiers", guichet:"Ville de Perpignan / CCAS", why:"Lieux gratuits de rencontre de proximité."},
+           {t:"Petits Frères des Pauvres", fiche:"Petits Frères des Pauvres : visites et sorties pour personnes âgées isolées", guichet:"Petits Frères des Pauvres", why:"Visites bénévoles à domicile, gratuites."}]},
+  {id:"retraite_faible", q:"Êtes-vous retraité(e) avec une retraite mensuelle inférieure à 1 100 € ?", risk:true,
+   droits:[{t:"ASPA (minimum vieillesse)", fiche:"ASPA (minimum vieillesse)", guichet:"Carsat / MSA", why:"Complète les revenus jusqu'à 1 043,59 €/mois (1 620,18 € pour un couple)."}]},
+  {id:"enfant_loisirs", q:"Avez-vous un enfant de 6 à 17 ans qui n'est inscrit à aucune activité de loisirs cette année ?", risk:true,
+   droits:[{t:"Passeport temps libres (6-17 ans)", fiche:"Passeport temps libres (6-17 ans)", guichet:"CAF 66 (3230)", why:"100 € ou 80 € selon le QF, envoyé automatiquement mais souvent non utilisé."},
+           {t:"Pass'Sport : 50 € pour s'inscrire dans un club", fiche:"Pass'Sport : 50 € pour s'inscrire dans un club", guichet:"Club sportif", why:"50 € déduits de la licence, pour les jeunes à QF ≤ 699 €."}]},
+  {id:"parent_seul", q:"Élevez-vous seul(e) un ou plusieurs enfants sans percevoir de pension alimentaire ?", risk:true,
+   droits:[{t:"Allocation de soutien familial (ASF)", fiche:"Allocation de soutien familial (ASF)", guichet:"CAF (3230)", why:"200,78 €/mois par enfant, sans condition de ressources."},
+           {t:"Pension alimentaire impayée : l'ARIPA", fiche:"Pension alimentaire impayée : l'ARIPA", guichet:"CAF, agence des pensions alimentaires", why:"Récupération de la pension dès le 1er impayé, sans avocat."}]},
+  {id:"micro_emploi", q:"Travaillez-vous avec un salaire net inférieur à 1 500 € par mois ?", risk:true,
+   droits:[{t:"Prime d'activité", fiche:"Prime d'activité", guichet:"CAF (3230)", why:"Complément de revenus pour les petits salaires, jusqu'à 638 €/mois de base."},
+           {t:"Aides au logement (APL)", fiche:"Aides au logement (APL)", guichet:"CAF (3230)", why:"Les petits salaires ouvrent souvent droit à une APL."}]},
+  {id:"numerique", q:"Avez-vous des difficultés à faire vos démarches en ligne (CAF, impôts, Ameli) ?", risk:true,
+   droits:[{t:"France Services : aide gratuite pour les démarches en ligne", fiche:"France Services : aide gratuite pour les démarches en ligne", guichet:"France Services Perpignan Centre", why:"Des conseillers vous aident gratuitement à faire vos démarches en ligne."}]},
+  {id:"objet_casse", q:"Avez-vous un objet cassé que vous n'avez pas fait réparer (électroménager, vélo, vêtement) ?", risk:true,
+   droits:[{t:"Repair Café : des bénévoles réparent vos objets gratuitement", fiche:"Repair Café : des bénévoles réparent vos objets gratuitement", guichet:"Repair Café de Toulouges", why:"Réparation gratuite, seules les pièces sont payantes."},
+           {t:"Aide vélo de la Métropole : 250 € à l'achat, 50 € pour une réparation", fiche:"Aide vélo de la Métropole : 250 € à l'achat, 50 € pour une réparation", guichet:"Perpignan Méditerranée Métropole", why:"50 €/an pour réparer un vélo, sans condition de revenus."}]},
+  {id:"facture_eau", q:"Avez-vous du mal à payer vos factures d'eau ou d'électricité ?", risk:true,
+   droits:[{t:"Aide pour payer les factures d'eau", fiche:"Aide pour payer les factures d'eau", guichet:"CCAS (04 68 34 95 22)", why:"Aide du CCAS pour les habitants non imposables."},
+           {t:"Chèque énergie", fiche:"Chèque énergie", guichet:"Envoi automatique", why:"Envoyé au printemps si vos revenus sont modestes — vérifiez qu'il a bien été reçu et utilisé."}]},
+  {id:"aidant", q:"Aidez-vous régulièrement un proche âgé, malade ou handicapé (visites, courses, soins) ?", risk:true,
+   droits:[{t:"Aidant familial : vos droits (congé, allocation, répit)", fiche:"Aidant familial : vos droits (congé, allocation, répit)", guichet:"CCAS Pôle Senior / MDPH", why:"Congé de proche aidant, AJPA, droit au répit : des droits que beaucoup d'aidants ignorent."}]}
+];
+
+/* Construction du questionnaire */
+(function buildDet(){
+  var box = document.getElementById("det-qs");
+  if(!box) return;
+  box.innerHTML = DET.map(function(d){
+    return '<div style="padding:10px 0;border-bottom:1px solid var(--bd)">'+
+      '<div style="font-weight:600;margin-bottom:6px">'+esc(d.q)+'</div>'+
+      '<div class="grid-opts">'+
+        '<label class="opt"><input type="radio" name="det_'+d.id+'" value="oui">Oui</label>'+
+        '<label class="opt"><input type="radio" name="det_'+d.id+'" value="non">Non</label>'+
+        '<label class="opt"><input type="radio" name="det_'+d.id+'" value="nsp">Je ne sais pas</label>'+
+      '</div></div>';
+  }).join("");
+})();
+
+document.getElementById("det-qs").addEventListener("change", function(e){
+  if(e.target.type !== "radio") return;
+  var name = e.target.name;
+  document.querySelectorAll('input[name="'+name+'"]').forEach(function(r){
+    r.closest("label.opt").classList.toggle("on", r.checked);
+  });
+});
+
+document.getElementById("det-run").addEventListener("click", function(){
+  var out = document.getElementById("det-out");
+  var hits = [];
+  DET.forEach(function(d){
+    var checked = document.querySelector('input[name="det_'+d.id+'"]:checked');
+    if(!checked) return;
+    var val = checked.value;
+    var isRisk = (d.risk === true && (val === "oui" || val === "nsp"))
+              || (d.risk === false && (val === "non" || val === "nsp"));
+    if(isRisk) hits.push({d:d, val:val});
+  });
+
+  if(!hits.length){
+    out.innerHTML = '<p class="hint">Aucun signal détecté avec vos réponses. Si vous avez un doute, cochez « Je ne sais pas » : c\'est souvent le signe d\'un droit à vérifier.</p>';
+    document.getElementById("det-print").disabled = true;
+    return;
+  }
+
+  var byFiche = {};
+  hits.forEach(function(h){
+    h.d.droits.forEach(function(dr){
+      if(!byFiche[dr.fiche]) byFiche[dr.fiche] = {dr:dr, causes:[]};
+      byFiche[dr.fiche].causes.push(h.d.q);
+    });
+  });
+
+  var cards = Object.keys(byFiche).map(function(fiche){
+    var o = byFiche[fiche], dr = o.dr;
+    var target = A.filter(function(a){return a.t === fiche})[0];
+    return '<article class="card" data-fiche="'+esc(fiche)+'">'+
+      '<div class="badges"><span class="badge b-chk">Droit à vérifier</span></div>'+
+      '<h3>'+esc(dr.t)+'</h3>'+
+      '<div class="org">'+esc(dr.guichet)+'</div>'+
+      '<p>'+linkify(dr.why)+'</p>'+
+      '<p class="chk"><strong>Pourquoi ce signal :</strong> '+esc(o.causes[0])+'</p>'+
+      (target ? '<p class="src"><a href="#" class="det-jump" data-fiche="'+esc(fiche)+'">Voir la fiche complète ↓</a></p>' : '')+
+      '</article>';
+  });
+
+  out.innerHTML = '<h3 style="color:var(--ok);font-family:Georgia,serif;margin:14px 0 8px">'+
+    hits.length+' signal'+(hits.length>1?'aux':'')+' détecté'+(hits.length>1?'s':'')+
+    ' — '+Object.keys(byFiche).length+' droit'+(Object.keys(byFiche).length>1?'s':'')+' à vérifier'+
+    '</h3>'+
+    '<p class="hint">Ces droits ne sont pas garantis : ce sont des pistes à confirmer auprès des guichets indiqués. Beaucoup de personnes y ont droit sans le savoir.</p>'+
+    cards.join("");
+
+  out.scrollIntoView({behavior:"smooth", block:"start"});
+  document.getElementById("det-print").disabled = false;
+});
+
+document.getElementById("det-reset").addEventListener("click", function(){
+  document.getElementById("det-print").disabled = true;
+  document.querySelectorAll('#det-qs input[type="radio"]').forEach(function(r){r.checked=false});
+  document.querySelectorAll('#det-qs label.opt').forEach(function(l){l.classList.remove("on")});
+  document.getElementById("det-out").innerHTML="";
+});
+
+document.getElementById("det-out").addEventListener("click", function(e){
+  var a = e.target.closest(".det-jump");
+  if(!a) return;
+  e.preventDefault();
+  var fiche = a.getAttribute("data-fiche");
+  if(!document.querySelector('[data-fiche-rendered="'+CSS.escape(fiche)+'"]')){
+    var target = A.filter(function(x){return x.t === fiche})[0];
+    if(target){
+      var tmp = document.createElement("div");
+      tmp.innerHTML = card(target);
+      var node = tmp.firstChild;
+      document.getElementById("out").prepend(node);
+    }
+  }
+  var el = document.querySelector('[data-fiche-rendered="'+CSS.escape(fiche)+'"]')
+        || document.querySelector('[data-fiche="'+CSS.escape(fiche)+'"]');
+  if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+/* Impression / PDF du détecteur */
+document.getElementById("det-print").addEventListener("click", function(){
+  var out = document.getElementById("det-out");
+  if(!out.innerHTML.trim()){
+    alert("Lancez d'abord le détecteur (« Voir mes droits oubliés »).");
+    return;
+  }
+  document.getElementById("det-print-date").textContent =
+    new Date().toLocaleDateString("fr-FR", {day:"2-digit", month:"long", year:"numeric"});
+  document.getElementById("det-legal-print").hidden = false;
+  document.body.classList.add("print-det");
+  document.body.classList.remove("print-sel");
+  var oldTitle = document.title;
+  document.title = "Mes droits oubliés — Aides à Perpignan";
+  window.print();
+  setTimeout(function(){
+    document.body.classList.remove("print-det");
+    document.getElementById("det-legal-print").hidden = true;
+    document.title = oldTitle;
+  }, 300);
+});
+
+window.addEventListener("beforeprint", function(){
+  if(document.getElementById("det-out").innerHTML.trim() && !document.body.classList.contains("print-det")){
+    var note = document.getElementById("print-note");
+    if(note && note.textContent.indexOf("ne constituent pas une décision") === -1){
+      note.textContent = "⚠️ Ces pistes ne constituent pas une décision ; seul l'organisme compétent peut confirmer vos droits. — " + note.textContent;
+    }
+  }
+});
+
+/* ============================================================
+   INITIALISATION DES ÉVÉNEMENTS GÉNÉRAUX
+   ============================================================ */
 opts.addEventListener("change",render);
 document.getElementById("qf").addEventListener("input",render);
-document.getElementById("btn-clear").addEventListener("click",function(){opts.querySelectorAll("input").forEach(function(i){i.checked=false});document.getElementById("qf").value="";render();opts.querySelector("input").focus()});
-document.getElementById("btn-print").addEventListener("click",function(){window.print()});
+document.getElementById("search").addEventListener("input",render);
+document.getElementById("parcours").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  var p=PARC[+b.dataset.p];
+  opts.querySelectorAll("input").forEach(function(i){i.checked=p[2].indexOf(i.value)>-1});
+  render();document.getElementById("results").focus();
+});
+document.getElementById("btn-clear").addEventListener("click",function(){opts.querySelectorAll("input").forEach(function(i){i.checked=false});document.getElementById("qf").value="";document.getElementById("search").value="";render();opts.querySelector("input").focus()});
+document.getElementById("btn-print").addEventListener("click",function(){
+  var sel=selected(),prep=document.getElementById("prep").value.trim();
+  document.body.classList.toggle("print-sel",document.getElementById("only-sel").checked);
+  var note=document.getElementById("print-note");
+  note.textContent=(prep?"Fiche préparée par un accompagnant pour : "+prep+". ":"")+"Guide des aides à Perpignan — édité le "+new Date().toLocaleDateString("fr-FR")+". Informations à vérifier auprès des organismes.";
+  window.print();
+});
+document.getElementById("btn-share").addEventListener("click",function(){
+  var sel=selected();
+  var txt="Aides et tarifs réduits à Perpignan (guide gratuit) : "+location.href;
+  if(sel.length){var names=CATS.filter(function(c){return sel.indexOf(c[0])>-1}).map(function(c){return c[1]});txt="Aides à Perpignan pour : "+names.join(", ")+". "+location.href}
+  if(navigator.share){navigator.share({title:"Aides à Perpignan",text:txt}).catch(function(){}) }
+  else{window.open("https://wa.me/?text="+encodeURIComponent(txt),"_blank","noopener")}
+});
+document.getElementById("btn-guichet").addEventListener("click",function(){
+  var g=document.getElementById("guichet");
+  g.hidden=!g.hidden;
+  if(!g.hidden)document.getElementById("prep").focus();
+});
+document.getElementById("diff1").addEventListener("change",renderPlan);
+document.querySelectorAll(".nr").forEach(function(i){i.addEventListener("change",renderNr)});
+
 render();
+renderPlan();
+renderNr();
+/* Ouvre le bloc détecteur si la page est chargée avec #detecteur */
+if(location.hash === "#detecteur"){
+  document.getElementById("detecteur").open = true;
+}
+
 </script>
 </body>
 </html>
